@@ -1,8 +1,7 @@
 use chrono::{DateTime, Utc};
 use futures::Stream;
 
-use crate::config;
-use crate::ingest::WeatherMessage;
+use crate::{config, ingest::WeatherMessage};
 
 type Error = anyhow::Error;
 
@@ -17,6 +16,7 @@ pub fn incoming_weather_data() -> impl Stream<Item = Result<WeatherMessage, Erro
         loop {
             for station_number in 0..config::N_WEATHER_STATIONS {
                 let msg = new_message(station_number);
+                // TODO: Add a probability to drop a message here to simulate network conditions
                 yield Ok(msg);
             }
             interval.tick().await;

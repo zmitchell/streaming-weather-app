@@ -19,7 +19,7 @@ type Buffers = HashMap<u8, VecDeque<WeatherMessage>>;
 type Error = anyhow::Error;
 
 /// A group of messages
-type MessageGroup = HashMap<u8, Option<WeatherMessage>>;
+pub type MessageGroup = HashMap<u8, Option<WeatherMessage>>;
 
 /// A single message from a weather station
 #[derive(Debug)]

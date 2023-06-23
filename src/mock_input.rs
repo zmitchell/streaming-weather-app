@@ -37,7 +37,6 @@ fn received_at() -> DateTime<Utc> {
 
 /// Produce a new message filled with dummy data
 fn new_message(station_number: u8) -> WeatherMessage {
-    let mut rng = rand::thread_rng();
     WeatherMessage {
         station_id: station_number,
         created_at: created_at(),

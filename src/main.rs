@@ -23,25 +23,23 @@ async fn main() -> Result<(), anyhow::Error> {
         .map(|i| (i, VecDeque::new()))
         .collect::<HashMap<_, _>>();
     let buffers = Arc::new(Mutex::new(inner_buffers));
-    let mut demuxer = ingest::demux(incoming_messages, buffers.clone())
-        .boxed()
-        .fuse();
+    let mut demuxer = tokio::spawn(ingest::demux(incoming_messages, buffers.clone())).fuse();
     let (group_sender, group_receiver) = tokio::sync::mpsc::channel(config::PROCESSING_BUFFER_SIZE);
-    let mut grouper = ingest::group_latest(buffers.clone(), group_sender)
-        .boxed()
-        .fuse();
+    let mut grouper = tokio::spawn(ingest::group_latest(buffers.clone(), group_sender)).fuse();
     let (pred_sender, pred_receiver) = tokio::sync::mpsc::channel(config::PROCESSING_BUFFER_SIZE);
-    let mut processor = really_sophisticated_weather_analysis(group_receiver, pred_sender)
-        .boxed()
-        .fuse();
-    let mut publisher = publish::publish(pred_receiver).boxed().fuse();
+    let mut processor = tokio::spawn(really_sophisticated_weather_analysis(
+        group_receiver,
+        pred_sender,
+    ))
+    .fuse();
+    let mut publisher = tokio::spawn(publish::publish(pred_receiver)).fuse();
 
     select! {
         res = demuxer => res,
         res = grouper => res,
         res = processor => res,
         res = publisher => res,
-    }
+    }?
 }
 
 /// Perform detailed analysis of atmospheric data to predict the weather

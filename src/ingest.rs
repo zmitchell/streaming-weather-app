@@ -85,7 +85,7 @@ async fn insert_message(msg: WeatherMessage, buffers: &mut Buffers) -> Result<()
 }
 
 /// Group the latest messages once per `GROUPING_TIMEOUT`
-pub async fn group_latest(
+pub async fn group_earliest(
     synced_buffers: Arc<Mutex<Buffers>>,
     chan: Sender<MessageGroup>,
 ) -> Result<(), Error> {
@@ -102,5 +102,4 @@ pub async fn group_latest(
             .await
             .context("couldn't send message group")?;
     }
-    Ok(())
 }

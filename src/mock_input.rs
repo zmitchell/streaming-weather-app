@@ -7,8 +7,6 @@ type Error = anyhow::Error;
 
 /// Returns a stream producing mock incoming weather data
 pub fn incoming_weather_data() -> impl Stream<Item = Result<WeatherMessage, Error>> {
-    let creation_start_time = chrono::offset::Utc::now()
-        - chrono::Duration::from_std(config::MESSAGE_PRODUCTION_LATENCY).unwrap();
     async_stream::stream! {
         // Produce a message from each station
         // Sleep until the next interval

@@ -25,14 +25,14 @@ async fn main() -> Result<(), anyhow::Error> {
     let buffers = Arc::new(Mutex::new(inner_buffers));
     let mut demuxer = tokio::spawn(ingest::demux(incoming_messages, buffers.clone())).fuse();
     let (group_sender, group_receiver) = tokio::sync::mpsc::channel(config::PROCESSING_BUFFER_SIZE);
-    let mut grouper = tokio::spawn(ingest::group_latest(buffers.clone(), group_sender)).fuse();
-    let (pred_sender, pred_receiver) = tokio::sync::mpsc::channel(config::PROCESSING_BUFFER_SIZE);
+    let mut grouper = tokio::spawn(ingest::group_earliest(buffers.clone(), group_sender)).fuse();
+    let (proc_sender, proc_receiver) = tokio::sync::mpsc::channel(config::PROCESSING_BUFFER_SIZE);
     let mut processor = tokio::spawn(really_sophisticated_weather_analysis(
         group_receiver,
-        pred_sender,
+        proc_sender,
     ))
     .fuse();
-    let mut publisher = tokio::spawn(publish::publish(pred_receiver)).fuse();
+    let mut publisher = tokio::spawn(publish::publish(proc_receiver)).fuse();
 
     select! {
         res = demuxer => res,
